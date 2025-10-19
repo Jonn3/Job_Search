@@ -25,6 +25,23 @@ def main():
     print("Let's get started! 🚀")
 
 
+    def require_libs():
+        try:
+            import requests
+            from bs4 import BeautifulSoup
+            return requests, BeautifulSoup
+        except Exception:
+            print("⚠️  Missing deps. Run: pip install -r requirements.txt")
+            raise
+
+    def scrape_xula_mission():
+        """TODO 6: Scrape XULA mission from the div.editorarea, look for 'founded by Saint'."""
+        requests, BeautifulSoup = require_libs()
+        url = "https://www.xula.edu/about/mission-values.html"
+        print(f"\n[Scraping XULA mission] {url}")
+        resp = requests.get(url, timeout=20)
+        resp.raise_for_status()
+        soup = BeautifulSoup(resp.text, "html.parser")
 
 if __name__ == "__main__":
     main()
