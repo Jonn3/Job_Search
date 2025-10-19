@@ -43,5 +43,20 @@ def main():
         resp.raise_for_status()
         soup = BeautifulSoup(resp.text, "html.parser")
 
+    def scrape_harvard_mission():
+        """Scrape Harvard University's mission statement from its About page."""
+        requests, BeautifulSoup = require_libs()
+        url = "https://www.harvard.edu/about/mission-vision-values/"
+        print(f"\n[Scraping Harvard Mission] {url}")
+        resp = requests.get(url, timeout=20)
+        resp.raise_for_status()
+        soup = BeautifulSoup(resp.text, "html.parser")
+
+        block = soup.find("div", class_="rte") or soup.find("div", class_="field-item")
+        text = block.get_text(" ", strip=True) if block else soup.get_text(" ", strip=True)
+
+        print("\n--- Harvard Mission (first 800 chars) ---")
+        print(text[:800] + ("..." if len(text) > 800 else ""))
+
 if __name__ == "__main__":
     main()
