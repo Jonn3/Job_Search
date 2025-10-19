@@ -1,5 +1,22 @@
+import argparse, csv, sys
+from datetime import datetime
+
 def main():
-    print("\n\nHello, World from scraper.py!\n\n")
+   
+    print(r"""
+  _____       _                _             
+ |  __ \     | |              | |            
+ | |__) |___ | |__   ___  _ __| | _____ _ __ 
+ |  _  // _ \| '_ \ / _ \| '__| |/ / _ \ '__|
+ | | \ \ (_) | |_) | (_) | |  |   <  __/ |   
+ |_|  \_\___/|_.__/ \___/|_|  |_|\_\___|_|   
+    """)
+    print("==============================================")
+    print("         Welcome to the Job Search App        ")
+    print("==============================================\n")
+
+
+
 
 
 if __name__ == "__main__":
