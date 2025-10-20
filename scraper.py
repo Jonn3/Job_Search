@@ -89,6 +89,60 @@ def main():
 
         print(f"✅ Saved {len(rows)} rows to {os.path.abspath(out)}")
 
+    def _parse_date(s):
+        from datetime import datetime
+        s = (s or "").strip()
+        for fmt in ("%Y-%m-%d", "%b %d, %Y", "%B %d, %Y"):
+            try:
+                return datetime.strptime(s, fmt)
+            except Exception:
+                pass
+        return None
+
+    def clean_jobs_csv(source="fake_jobs.csv", dest="fake_jobs_clean.csv", drop_older_than_days=None):
+        """De-duplicate, optionally drop older-than-N-days, and sort newest→oldest."""
+        import csv
+        from datetime import datetime, timedelta
+
+        try:
+            with open(source, newline="", encoding="utf-8") as f:
+                rows = list(csv.DictReader(f))
+        except FileNotFoundError:
+            print(f"⚠️  '{source}' not found. Run the fake jobs scrape first.")
+            return
+
+        seen = set()
+        deduped = []
+        for r in rows:
+            key = (
+                (r.get("Job Title") or "").strip().lower(),
+                (r.get("Company") or "").strip().lower(),
+                (r.get("Location") or "").strip().lower(),
+                (r.get("Date Posted") or "").strip().lower(),
+            )
+            if key not in seen:
+                seen.add(key)
+                deduped.append(r)
+
+        if drop_older_than_days is not None:
+            cutoff = datetime.now() - timedelta(days=drop_older_than_days)
+            tmp = []
+            for r in deduped:
+                d = _parse_date(r.get("Date Posted"))
+                if d is None or d >= cutoff:
+                    tmp.append(r)
+            deduped = tmp
+
+        deduped.sort(key=lambda r: _parse_date(r.get("Date Posted")) or _parse_date("1900-01-01"), reverse=True)
+
+        with open(dest, "w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=["Job Title","Company","Location","Date Posted"])
+            writer.writeheader()
+            writer.writerows(deduped)
+
+        print(f"✅ Cleaned {len(deduped)} rows → {dest}")
+
+
     try:
         do_xula = input("\nRun TODO 6 (XULA mission scrape)? [y/N]: ").strip().lower() == "y"
         if do_xula:
@@ -103,13 +157,22 @@ def main():
         if do_jobs:
             scrape_fake_jobs_to_csv()
 
+        do_clean = input("\nBONUS: Clean CSV (de-dup, drop old, sort)? [y/N]: ").strip().lower() == "y"
+        if do_clean:
+            try:
+                days = input("Drop listings older than how many days? (blank = keep all): ").strip()
+                days_int = int(days) if days else None
+            except ValueError:
+                days_int = None
+            clean_jobs_csv(drop_older_than_days=days_int)
+
+
     except Exception as e:
         print("❌ Error:", e)
 
     print("\nDone. (You can re-run and choose different options.)")
 
+    
 
-if __name__ == "__main__":
-    main()
 if __name__ == "__main__":
     main()
